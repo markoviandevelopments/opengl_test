@@ -3,6 +3,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <glm/gtx/string_cast.hpp>
 #include <iostream>
 #include <ft2build.h>
 #include <string>
@@ -11,26 +12,26 @@
 
 #include "text_renderer.h"
 #include "shaders.h"
+#include "camera.h"
 
 #include <map>
 
 std::map<char, Character> Characters;
 unsigned int VAO_text, VBO_text;
 
+void framebuffer_size_callback(GLFWwindow *window, int width, int height);
+void processInput(GLFWwindow *window, Camera &camera, float deltaTime);
 
-
-void framebuffer_size_callback(GLFWwindow* window, int width, int height);
-void processInput(GLFWwindow* window, float &cameraSpeed, glm::vec3 &cameraPos, glm::vec3 &cameraFront, glm::vec3 &cameraUp, float &yaw, float &pitch);
-
-
-int main() {
+int main()
+{
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    GLFWwindow* window = glfwCreateWindow(800, 600, "Chessboard World", nullptr, nullptr);
-    if (!window) {
+    GLFWwindow *window = glfwCreateWindow(800, 600, "Chessboard World", nullptr, nullptr);
+    if (!window)
+    {
         std::cerr << "Failed to create GLFW window" << std::endl;
         glfwTerminate();
         return -1;
@@ -39,10 +40,14 @@ int main() {
     glfwMakeContextCurrent(window);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
-    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+    {
         std::cerr << "Failed to initialize GLAD" << std::endl;
         return -1;
     }
+
+    // Initialize Camera
+    Camera camera(glm::vec3(0.0f, 0.0f, 2.0f));
 
     // Compile shaders
     unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
@@ -121,10 +126,6 @@ int main() {
 
     glBindVertexArray(0);
 
-    glm::vec3 cameraPos(0.0f, 0.0f, 2.0f);
-    glm::vec3 cameraFront(0.0f, -0.5f, -1.0f);
-    glm::vec3 cameraUp(0.0f, 1.0f, 0.0f);
-    float yaw = 40.0f, pitch = 0.0f;
     float deltaTime = 0.0f;
     float lastFrame = 0.0f;
 
@@ -143,7 +144,9 @@ int main() {
                                           0.0f, static_cast<float>(height));
     glUseProgram(textShader);
     glUniformMatrix4fv(glGetUniformLocation(textShader, "projection"), 1, GL_FALSE, glm::value_ptr(textProjection));
-    
+
+    glm::mat4 projection = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
+
     glClearColor(0.2f, 0.3f, 0.5f, 1.0f);
 
     while (!glfwWindowShouldClose(window)) {
@@ -151,16 +154,13 @@ int main() {
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
-        float cameraSpeed = 8.5f * deltaTime;
-        processInput(window, cameraSpeed, cameraPos, cameraFront, cameraUp, yaw, pitch);
+        processInput(window, camera, deltaTime);
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         glUseProgram(shaderProgram);
 
-        // Camera matrices
-        glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
-        glm::mat4 projection = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
+        glm::mat4 view = camera.GetViewMatrix();
 
         glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "view"), 1, GL_FALSE, glm::value_ptr(view));
         glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
@@ -203,25 +203,23 @@ int main() {
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         glDisable(GL_DEPTH_TEST);
 
-
-        std::string x_str = std::to_string(std::round(10.0f * cameraPos[0]) * 0.1f);
+        // Render Text
+        std::string x_str = std::to_string(std::round(10.0f * camera.Position.x) * 0.1f);
         x_str = x_str.substr(0, x_str.find('.') + 2);
-        std::string z_str = std::to_string(std::round(10.0f * cameraPos[2]) * 0.1f);
+        std::string z_str = std::to_string(std::round(10.0f * camera.Position.z) * 0.1f);
         z_str = z_str.substr(0, z_str.find('.') + 2);
 
-        std::string pitch_str = std::to_string(std::round(10.0f * pitch) * 0.1f);
+        std::string pitch_str = std::to_string(std::round(10.0f * camera.Pitch) * 0.1f);
         pitch_str = pitch_str.substr(0, pitch_str.find('.') + 2);
-        std::string yaw_str = std::to_string(std::round(10.0f * yaw) * 0.1f);
+        std::string yaw_str = std::to_string(std::round(10.0f * camera.Yaw) * 0.1f);
         yaw_str = yaw_str.substr(0, yaw_str.find('.') + 2);
 
-        std::string time_str = std::to_string(std::round(10.0f * currentFrame) * 0.1f);
+        std::string time_str = std::to_string(std::round(10.0f * glfwGetTime()) * 0.1f);
         time_str = time_str.substr(0, time_str.find('.') + 2);
 
-
         std::string full_str = "X: " + x_str + "   Z: " + z_str + "   Yw: " + yaw_str + "   P: " + pitch_str + "   T: " + time_str;
-        
 
-        renderText(textShader, full_str, 25.0f, 550.0f, 0.5f, glm::vec3(1.0f, 0.0f, 1.0f)); // Adjust scale
+        renderText(textShader, full_str, 25.0f, 550.0f, 0.5f, glm::vec3(1.0f, 0.0f, 1.0f));
 
         glEnable(GL_DEPTH_TEST);
         glfwSwapBuffers(window);
@@ -242,42 +240,26 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
     glViewport(0, 0, width, height);
 }
 
-void processInput(GLFWwindow* window, float &cameraSpeed, glm::vec3 &cameraPos, glm::vec3 &cameraFront, glm::vec3 &cameraUp, float &yaw, float &pitch) {
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-        glm::vec3 forward = glm::normalize(glm::vec3(cameraFront.x, 0.0f, cameraFront.z)); // Restrict to xz-plane
-        cameraPos += cameraSpeed * forward;
-    }
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-        glm::vec3 backward = glm::normalize(glm::vec3(cameraFront.x, 0.0f, cameraFront.z)); // Restrict to xz-plane
-        cameraPos -= cameraSpeed * backward;
-    }
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-        glm::vec3 left = glm::normalize(glm::cross(cameraFront, cameraUp)); // Left is perpendicular to cameraFront and up
-        cameraPos -= cameraSpeed * glm::vec3(left.x, 0.0f, left.z); // Restrict to xz-plane
-    }
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-        glm::vec3 right = glm::normalize(glm::cross(cameraFront, cameraUp)); // Right is perpendicular to cameraFront and up
-        cameraPos += cameraSpeed * glm::vec3(right.x, 0.0f, right.z); // Restrict to xz-plane
-    }
+void processInput(GLFWwindow *window, Camera &camera, float deltaTime)
+{
+    // WASD for translation
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+        camera.ProcessKeyboard(true, false, false, false, deltaTime);
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+        camera.ProcessKeyboard(false, true, false, false, deltaTime);
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+        camera.ProcessKeyboard(false, false, true, false, deltaTime);
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+        camera.ProcessKeyboard(false, false, false, true, deltaTime);
 
-    // Ensure camera stays on the surface
-    cameraPos.y = 2.0f;
-
-    float sensitivity = 1.5f;
+    // Arrow keys for rotation
+    float sensitivity = 50.0f * deltaTime; // Adjust sensitivity
     if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
-        pitch += sensitivity;
+        camera.ProcessMouseMovement(0.0f, sensitivity);
     if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
-        pitch -= sensitivity;
+        camera.ProcessMouseMovement(0.0f, -sensitivity);
     if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
-        yaw -= sensitivity;
+        camera.ProcessMouseMovement(-sensitivity, 0.0f);
     if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
-        yaw += sensitivity;
-
-    pitch = glm::clamp(pitch, -89.0f, 89.0f);
-
-    glm::vec3 direction;
-    direction.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
-    direction.y = sin(glm::radians(pitch));
-    direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
-    cameraFront = glm::normalize(direction);
+        camera.ProcessMouseMovement(sensitivity, 0.0f);
 }
