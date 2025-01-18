@@ -273,6 +273,8 @@ int main() {
                                           0.0f, static_cast<float>(height));
     glUseProgram(textShader);
     glUniformMatrix4fv(glGetUniformLocation(textShader, "projection"), 1, GL_FALSE, glm::value_ptr(textProjection));
+    
+    glClearColor(0.2f, 0.3f, 0.5f, 1.0f);
 
     while (!glfwWindowShouldClose(window)) {
         float currentFrame = glfwGetTime();
