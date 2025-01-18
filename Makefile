@@ -5,7 +5,7 @@ CC = gcc
 CFLAGS = -Wall -O2 -Iinclude -I/usr/include/freetype2
 
 # Source files for each target
-MAIN_SRC = include/main.cpp src/text_renderer.cpp src/camera.cpp
+MAIN_SRC = include/main.cpp src/text_renderer.cpp src/camera.cpp src/input_handler.cpp
 SERVER_SRC = src/server.cpp
 COMMON_SRC = src/glad/glad.c
 

@@ -5,6 +5,8 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/string_cast.hpp>
 #include <iostream>
+#include <sstream>
+#include <iomanip>
 #include <ft2build.h>
 #include <string>
 #include <cmath>
@@ -19,14 +21,22 @@
 #include "text_renderer.h"
 #include "shaders.h"
 #include "camera.h"
+#include "input_handler.h"
 
 #include <map>
 
 std::map<char, Character> Characters;
 unsigned int VAO_text, VBO_text;
 
+
+std::string formatFloat(float value)
+{
+    std::ostringstream stream;
+    stream << std::fixed << std::setprecision(1) << value;
+    return stream.str();
+}
+
 void framebuffer_size_callback(GLFWwindow *window, int width, int height);
-void processInput(GLFWwindow *window, Camera &camera, float deltaTime);
 
 #define PORT 12346
 
@@ -84,6 +94,8 @@ int main()
 
     // Initialize Camera
     Camera camera(glm::vec3(0.0f, 2.0f, 2.0f));
+
+    bool isRunning = false;
 
     // Compile shaders
     unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
@@ -206,7 +218,7 @@ int main()
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
-        processInput(window, camera, deltaTime);
+        processInput(window, camera, deltaTime, isRunning);
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -257,22 +269,12 @@ int main()
 
 
         // Render Text
-        std::string x_str = std::to_string(std::round(10.0f * camera.Position.x) * 0.1f);
-        x_str = x_str.substr(0, x_str.find('.') + 2);
-        std::string y_str = std::to_string(std::round(10.0f * camera.Position.y) * 0.1f);
-        y_str = y_str.substr(0, y_str.find('.') + 2);
-        std::string z_str = std::to_string(std::round(10.0f * camera.Position.z) * 0.1f);
-        z_str = z_str.substr(0, z_str.find('.') + 2);
-
-        std::string pitch_str = std::to_string(std::round(10.0f * camera.Pitch) * 0.1f);
-        pitch_str = pitch_str.substr(0, pitch_str.find('.') + 2);
-        std::string yaw_str = std::to_string(std::round(10.0f * camera.Yaw) * 0.1f);
-        yaw_str = yaw_str.substr(0, yaw_str.find('.') + 2);
-
-        std::string time_str = std::to_string(std::round(10.0f * glfwGetTime()) * 0.1f);
-        time_str = time_str.substr(0, time_str.find('.') + 2);
-
-        std::string full_str = "X: " + x_str + "   Y: " + y_str + "   Z: " + z_str + "   Yw: " + yaw_str + "   P: " + pitch_str + "   T: " + time_str;
+        std::string full_str = "X: " + formatFloat(camera.Position.x) +
+                               "   Y: " + formatFloat(camera.Position.y) +
+                               "   Z: " + formatFloat(camera.Position.z) +
+                               "   Yw: " + formatFloat(camera.Yaw) +
+                               "   P: " + formatFloat(camera.Pitch) +
+                               "   T: " + formatFloat(glfwGetTime());
 
         renderText(textShader, full_str, 25.0f, 550.0f, 0.5f, glm::vec3(1.0f, 0.0f, 1.0f));
 
@@ -300,28 +302,4 @@ int main()
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
     glViewport(0, 0, width, height);
-}
-
-void processInput(GLFWwindow *window, Camera &camera, float deltaTime)
-{
-    // WASD for translation
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        camera.ProcessKeyboard(true, false, false, false, deltaTime);
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        camera.ProcessKeyboard(false, true, false, false, deltaTime);
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        camera.ProcessKeyboard(false, false, true, false, deltaTime);
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        camera.ProcessKeyboard(false, false, false, true, deltaTime);
-
-    // Arrow keys for rotation
-    float sensitivity = 50.0f * deltaTime; // Adjust sensitivity
-    if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
-        camera.ProcessMouseMovement(0.0f, sensitivity);
-    if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
-        camera.ProcessMouseMovement(0.0f, -sensitivity);
-    if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
-        camera.ProcessMouseMovement(-sensitivity, 0.0f);
-    if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
-        camera.ProcessMouseMovement(sensitivity, 0.0f);
 }
