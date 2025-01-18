@@ -32,7 +32,7 @@ unsigned int VAO_text, VBO_text;
 std::string formatFloat(float value)
 {
     std::ostringstream stream;
-    stream << std::fixed << std::setprecision(2) << value;
+    stream << std::fixed << std::setprecision(1) << value;
     return stream.str();
 }
 
@@ -257,7 +257,7 @@ int main()
         // Draw the wireframe outline
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); // Wireframe mode
         glLineWidth(2.0f); // Optional: Set outline thickness
-        glUniform3fv(glGetUniformLocation(shaderProgram, "color"), 1, glm::value_ptr(glm::vec3(1.0f, 0.0f, 0.0f))); // Red outline
+        glUniform3fv(glGetUniformLocation(shaderProgram, "color"), 1, glm::value_ptr(glm::vec3(0.0f, 0.0f, 1.0f))); // Blue outline
         glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 
         // Reset to default (solid) mode
@@ -274,12 +274,12 @@ int main()
                                "   Z: " + formatFloat(camera.Position.z) +
                                "   Yw: " + formatFloat(camera.Yaw) +
                                "   P: " + formatFloat(camera.Pitch) +
-                               "   T: " + formatFloat(glfwGetTime());
+                               "   T: " + formatFloat(glfwGetTime()) +
+                               "   B: " + formatFloat(server_time);
 
-        renderText(textShader, full_str, 25.0f, 550.0f, 0.5f, glm::vec3(0.8f, 0.8f, 0.0f));
-        renderText(textShader, "B: " + formatFloat(server_time), 25.0f, 500.0f, 0.5f, glm::vec3(0.8f, 0.8f, 0.0f));
+        renderText(textShader, full_str, 25.0f, 550.0f, 0.5f, glm::vec3(1.0f, 0.0f, 1.0f));
 
-            glEnable(GL_DEPTH_TEST);
+        glEnable(GL_DEPTH_TEST);
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
