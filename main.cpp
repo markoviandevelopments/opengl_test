@@ -108,7 +108,7 @@ int main() {
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
-        float cameraSpeed = 2.5f * deltaTime;
+        float cameraSpeed = 8.5f * deltaTime;
         processInput(window, cameraSpeed, cameraPos, cameraFront, cameraUp, yaw, pitch);
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -161,7 +161,7 @@ void processInput(GLFWwindow* window, float &cameraSpeed, glm::vec3 &cameraPos, 
         cameraPos -= cameraSpeed * backward;
     }
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-        glm::vec3 left = glm::normalize(glm::cross(cameraUp, cameraFront)); // Left is perpendicular to cameraFront and up
+        glm::vec3 left = glm::normalize(glm::cross(cameraFront, cameraUp)); // Left is perpendicular to cameraFront and up
         cameraPos -= cameraSpeed * glm::vec3(left.x, 0.0f, left.z); // Restrict to xz-plane
     }
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
