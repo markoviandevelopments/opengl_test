@@ -62,5 +62,10 @@ void Cube::draw(unsigned int shaderProgram, const glm::mat4& view, const glm::ma
 
     glBindVertexArray(VAO);
     glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
-    glBindVertexArray(0);
+
+    // Draw the wireframe outline
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); // Wireframe mode
+    glLineWidth(2.0f); // Optional: Set outline thickness
+    glUniform3fv(glGetUniformLocation(shaderProgram, "color"), 1, glm::value_ptr(glm::vec3(0.1f, 0.0f, 1.0f))); // Red outline
+    glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 }
