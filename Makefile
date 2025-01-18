@@ -1,32 +1,27 @@
 # Compiler and flags
 CXX = g++
-CXXFLAGS = -std=c++17 -Iinclude -I/usr/include/freetype2 -Wall -Wextra
+CXXFLAGS = -Wall -O2 -std=c++17 -Iinclude -I/usr/include/freetype2
 
-# Libraries
-LIBS = -lGL -lglfw -lfreetype
+# Source and object files
+SRC = include/main.cpp src/text_renderer.cpp src/glad/glad.c
+OBJ = $(SRC:.cpp=.o)
 
-# Source files and output
-SRCS = main.cpp src/glad/glad.c
-OBJS = main.o src/glad/glad.o
+# Target executable
 TARGET = ChessboardWorld
 
-# Default target
-all: $(TARGET)
+# Libraries
+LDFLAGS = -lglfw -lGL -lfreetype -ldl -lX11 -lpthread -lm -lXrandr -lXi
 
-# Linking
-$(TARGET): $(OBJS)
-	$(CXX) $(OBJS) $(LIBS) -o $(TARGET)
+# Build the executable
+$(TARGET): $(OBJ)
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
 
-# Compilation rules
-main.o: main.cpp
-	$(CXX) $(CXXFLAGS) -c main.cpp -o main.o
+# Compile object files
+%.o: %.cpp
+	$(CXX) $(CXXFLAGS) -c $< -o $@
 
-src/glad/glad.o: src/glad/glad.c
-	$(CXX) $(CXXFLAGS) -c src/glad/glad.c -o src/glad/glad.o
-
-# Clean up build files
+# Clean up
 clean:
-	rm -f $(OBJS) $(TARGET)
+	rm -f $(OBJ) $(TARGET)
 
-# Clean and rebuild
-rebuild: clean all
+.PHONY: clean
