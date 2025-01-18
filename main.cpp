@@ -354,14 +354,25 @@ int main() {
         }
 
         // Draw a green cube on the chessboard at (4, 1, 4)
-        glm::mat4 cubeModel = glm::translate(glm::mat4(1.0f), glm::vec3(10.0f + sin(currentFrame) * 5.0f, 0.5f, 10.0f + cos(currentFrame) * 5.0f));
+        glm::mat4 cubeModel = glm::translate(glm::mat4(1.0f), glm::vec3(10.0f + sin(currentFrame * 0.1f) * 5.0f, 0.5f, 10.0f + cos(currentFrame * 0.1f) * 5.0f));
         glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, glm::value_ptr(cubeModel));
         glUniform3fv(glGetUniformLocation(shaderProgram, "color"), 1, glm::value_ptr(glm::vec3(0.0f, 1.0f, 0.0f)));
         glBindVertexArray(cubeVAO);
         glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 
-        glfwSwapBuffers(window);
-        glfwPollEvents();
+        // Draw the wireframe outline
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); // Wireframe mode
+        glLineWidth(2.0f); // Optional: Set outline thickness
+        glUniform3fv(glGetUniformLocation(shaderProgram, "color"), 1, glm::value_ptr(glm::vec3(1.0f, 0.0f, 0.0f))); // Red outline
+        glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+
+        // Reset to default (solid) mode
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        glDisable(GL_DEPTH_TEST);
+
 
         std::string x_str = std::to_string(std::round(10.0f * cameraPos[0]) * 0.1f);
         x_str = x_str.substr(0, x_str.find('.') + 2);
@@ -382,6 +393,7 @@ int main() {
 
         renderText(textShader, full_str, 25.0f, 550.0f, 0.5f, glm::vec3(1.0f, 0.0f, 1.0f)); // Adjust scale
 
+        glEnable(GL_DEPTH_TEST);
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
