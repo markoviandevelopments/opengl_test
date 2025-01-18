@@ -96,10 +96,10 @@ int main() {
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
-    glm::vec3 cameraPos(0.0f, 5.0f, 10.0f);
+    glm::vec3 cameraPos(0.0f, 0.0f, 2.0f);
     glm::vec3 cameraFront(0.0f, -0.5f, -1.0f);
     glm::vec3 cameraUp(0.0f, 1.0f, 0.0f);
-    float yaw = -90.0f, pitch = 0.0f;
+    float yaw = 40.0f, pitch = 0.0f;
     float deltaTime = 0.0f;
     float lastFrame = 0.0f;
 
@@ -122,8 +122,8 @@ int main() {
         glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "view"), 1, GL_FALSE, glm::value_ptr(view));
         glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
 
-        for (int row = 0; row < 8; ++row) {
-            for (int col = 0; col < 8; ++col) {
+        for (int row = 0; row < 32; ++row) {
+            for (int col = 0; col < 32; ++col) {
                 glm::vec3 position(col, 0.0f, row);
                 glm::vec3 color = (row + col) % 2 == 0 ? glm::vec3(1.0f) : glm::vec3(0.0f);
 
@@ -152,16 +152,27 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
 }
 
 void processInput(GLFWwindow* window, float &cameraSpeed, glm::vec3 &cameraPos, glm::vec3 &cameraFront, glm::vec3 &cameraUp, float &yaw, float &pitch) {
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        cameraPos += cameraSpeed * cameraFront;
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        cameraPos -= cameraSpeed * cameraFront;
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+        glm::vec3 forward = glm::normalize(glm::vec3(cameraFront.x, 0.0f, cameraFront.z)); // Restrict to xz-plane
+        cameraPos += cameraSpeed * forward;
+    }
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
+        glm::vec3 backward = glm::normalize(glm::vec3(cameraFront.x, 0.0f, cameraFront.z)); // Restrict to xz-plane
+        cameraPos -= cameraSpeed * backward;
+    }
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+        glm::vec3 left = glm::normalize(glm::cross(cameraUp, cameraFront)); // Left is perpendicular to cameraFront and up
+        cameraPos -= cameraSpeed * glm::vec3(left.x, 0.0f, left.z); // Restrict to xz-plane
+    }
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+        glm::vec3 right = glm::normalize(glm::cross(cameraFront, cameraUp)); // Right is perpendicular to cameraFront and up
+        cameraPos += cameraSpeed * glm::vec3(right.x, 0.0f, right.z); // Restrict to xz-plane
+    }
 
-    float sensitivity = 0.1f;
+    // Ensure camera stays on the surface
+    cameraPos.y = 2.0f;
+
+    float sensitivity = 1.5f;
     if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
         pitch += sensitivity;
     if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
