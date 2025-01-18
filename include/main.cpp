@@ -18,12 +18,6 @@
 #include <unistd.h>
 
 
-#include <cstring>
-#include <sys/socket.h>
-#include <arpa/inet.h>
-#include <unistd.h>
-
-
 #include FT_FREETYPE_H
 
 #include "text_renderer.h"
@@ -46,8 +40,6 @@ std::string formatFloat(float value)
 }
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height);
-
-#define PORT 12346
 
 #define PORT 12346
 
@@ -102,41 +94,11 @@ int main()
     char buffer[1024] = {0};
 
 
-
-    // Connect to Server
-    int sock = 0;
-    struct sockaddr_in serv_addr;
-
-    // Create socket
-    if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
-        perror("Socket creation error");
-        return -1;
-    }
-
-    serv_addr.sin_family = AF_INET;
-    serv_addr.sin_port = htons(PORT);
-
-    // Convert IPv4 and connect
-    if (inet_pton(AF_INET, "50.188.120.138", &serv_addr.sin_addr) <= 0) {
-        perror("Invalid address or address not supported");
-        return -1;
-    }
-
-    if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) {
-        perror("Connection failed");
-        return -1;
-    }
-
-    char buffer[1024] = {0};
-
-
-
     // Initialize Camera
     Camera camera(glm::vec3(0.0f, 2.0f, 2.0f));
 
     bool isRunning = false;
 
-    bool isRunning = false;
 
     // Compile shaders
     unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
@@ -254,23 +216,6 @@ int main()
 
         float server_time = std::stof(server_time_str);
 
-
-
-        // Get information from Server
-        std::string server_time_str;
-        int valread = read(sock, buffer, 1024);
-        if (valread > 0) {
-            //std::cout << buffer;
-            server_time_str = "";
-            server_time_str = buffer;
-            memset(buffer, 0, sizeof(buffer)); // Clear buffer
-        } else {
-            break; // Exit loop if server disconnects
-        }
-
-        float server_time = std::stof(server_time_str);
-
-
         float currentFrame = glfwGetTime();
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
@@ -306,7 +251,6 @@ int main()
         }
 
         // Draw a green cube on the chessboard at (4, 1, 4)
-        glm::mat4 cubeModel = glm::translate(glm::mat4(1.0f), glm::vec3(10.0f + sin(server_time * 0.01f) * 5.0f, 0.5f, 10.0f + cos(server_time * 0.01f) * 5.0f));
         glm::mat4 cubeModel = glm::translate(glm::mat4(1.0f), glm::vec3(10.0f + sin(server_time * 0.01f) * 5.0f, 0.5f, 10.0f + cos(server_time * 0.01f) * 5.0f));
         glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, glm::value_ptr(cubeModel));
         glUniform3fv(glGetUniformLocation(shaderProgram, "color"), 1, glm::value_ptr(glm::vec3(0.0f, 1.0f, 0.0f)));
@@ -350,9 +294,6 @@ int main()
     glDeleteBuffers(1, &cubeEBO);
 
     glfwTerminate();
-
-    close(sock);
-
 
     close(sock);
 
