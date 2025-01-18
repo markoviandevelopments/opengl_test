@@ -1,9 +1,9 @@
 # Compiler and flags
 CXX = g++
-CXXFLAGS = -std=c++17 -Iinclude -Wall -Wextra
+CXXFLAGS = -std=c++17 -Iinclude -I/usr/include/freetype2 -Wall -Wextra
 
 # Libraries
-LIBS = -lGL -lglfw
+LIBS = -lGL -lglfw -lfreetype
 
 # Source files and output
 SRCS = main.cpp src/glad/glad.c
