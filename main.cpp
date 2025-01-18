@@ -354,7 +354,7 @@ int main() {
         }
 
         // Draw a green cube on the chessboard at (4, 1, 4)
-        glm::mat4 cubeModel = glm::translate(glm::mat4(1.0f), glm::vec3(4.0f, 0.5f, 4.0f));
+        glm::mat4 cubeModel = glm::translate(glm::mat4(1.0f), glm::vec3(10.0f + sin(currentFrame) * 5.0f, 0.5f, 10.0f + cos(currentFrame) * 5.0f));
         glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, glm::value_ptr(cubeModel));
         glUniform3fv(glGetUniformLocation(shaderProgram, "color"), 1, glm::value_ptr(glm::vec3(0.0f, 1.0f, 0.0f)));
         glBindVertexArray(cubeVAO);
