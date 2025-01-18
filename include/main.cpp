@@ -26,6 +26,7 @@
 #include "input_handler.h"
 #include "input_handler.h"
 #include "cube.h"
+#include "player.h"
 
 #include <map>
 
@@ -140,6 +141,7 @@ int main()
     glEnableVertexAttribArray(0);
 
     Cube cube;
+    Player player;
 
     float deltaTime = 0.0f;
     float lastFrame = 0.0f;
@@ -216,6 +218,8 @@ int main()
 
         // Draw a green cube on the chessboard at (4, 1, 4)
         cube.draw(shaderProgram, view, projection, server_time);
+
+        player.draw(shaderProgram, view, projection, server_time, camera);
 
         // Reset to default (solid) mode
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
