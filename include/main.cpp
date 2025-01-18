@@ -25,7 +25,7 @@
 #include "camera.h"
 #include "input_handler.h"
 #include "input_handler.h"
-#include "Cube.h"
+#include "cube.h"
 
 #include <map>
 
