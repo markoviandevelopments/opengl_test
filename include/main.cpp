@@ -274,13 +274,10 @@ int main()
                                "   Z: " + formatFloat(camera.Position.z) +
                                "   Yw: " + formatFloat(camera.Yaw) +
                                "   P: " + formatFloat(camera.Pitch) +
-                               "   T: " + formatFloat(glfwGetTime());
+                               "   T: " + formatFloat(glfwGetTime()) +
+                               "   B: " + formatFloat(server_time);
 
         renderText(textShader, full_str, 25.0f, 550.0f, 0.5f, glm::vec3(1.0f, 0.0f, 1.0f));
-
-        full_str = "B: " + server_time_str;
-        renderText(textShader, full_str, 25.0f, 500.0f, 0.5f, glm::vec3(1.0f, 0.0f, 1.0f));
-
 
         glEnable(GL_DEPTH_TEST);
         glfwSwapBuffers(window);
