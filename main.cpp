@@ -377,7 +377,7 @@ int main() {
         time_str = time_str.substr(0, time_str.find('.') + 2);
 
 
-        std::string full_str = "X: " + x_str + "   Z: " + z_str + "   Y: " + yaw_str + "   P: " + pitch_str + "   T: " + time_str;
+        std::string full_str = "X: " + x_str + "   Z: " + z_str + "   Yw: " + yaw_str + "   P: " + pitch_str + "   T: " + time_str;
         
 
         renderText(textShader, full_str, 25.0f, 550.0f, 0.5f, glm::vec3(1.0f, 0.0f, 1.0f)); // Adjust scale
