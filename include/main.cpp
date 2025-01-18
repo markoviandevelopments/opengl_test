@@ -32,7 +32,7 @@ unsigned int VAO_text, VBO_text;
 std::string formatFloat(float value)
 {
     std::ostringstream stream;
-    stream << std::fixed << std::setprecision(1) << value;
+    stream << std::fixed << std::setprecision(2) << value;
     return stream.str();
 }
 
@@ -274,12 +274,12 @@ int main()
                                "   Z: " + formatFloat(camera.Position.z) +
                                "   Yw: " + formatFloat(camera.Yaw) +
                                "   P: " + formatFloat(camera.Pitch) +
-                               "   T: " + formatFloat(glfwGetTime()) +
-                               "   B: " + formatFloat(server_time);
+                               "   T: " + formatFloat(glfwGetTime());
 
-        renderText(textShader, full_str, 25.0f, 550.0f, 0.5f, glm::vec3(1.0f, 0.0f, 1.0f));
+        renderText(textShader, full_str, 25.0f, 550.0f, 0.5f, glm::vec3(0.8f, 0.8f, 0.0f));
+        renderText(textShader, "B: " + formatFloat(server_time), 25.0f, 500.0f, 0.5f, glm::vec3(0.8f, 0.8f, 0.0f));
 
-        glEnable(GL_DEPTH_TEST);
+            glEnable(GL_DEPTH_TEST);
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
