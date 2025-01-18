@@ -373,8 +373,11 @@ int main() {
         std::string yaw_str = std::to_string(std::round(10.0f * yaw) * 0.1f);
         yaw_str = yaw_str.substr(0, yaw_str.find('.') + 2);
 
+        std::string time_str = std::to_string(std::round(10.0f * currentFrame) * 0.1f);
+        time_str = time_str.substr(0, time_str.find('.') + 2);
 
-        std::string full_str = "X: " + x_str + "   Z: " + z_str + "   Yaw: " + yaw_str + "   Pitch: " + pitch_str;
+
+        std::string full_str = "X: " + x_str + "   Z: " + z_str + "   Yaw: " + yaw_str + "   Pitch: " + pitch_str + "   Time: " + time_str;
         
 
         renderText(textShader, full_str, 25.0f, 550.0f, 0.5f, glm::vec3(1.0f, 0.0f, 1.0f)); // Adjust scale
