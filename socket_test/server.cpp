@@ -8,7 +8,7 @@
 #include <unistd.h>
 #include <chrono>
 
-#define PORT 8080
+#define PORT 12346
 
 std::vector<int> clients; // List of connected client sockets
 std::mutex client_mutex;  // Mutex to protect client list

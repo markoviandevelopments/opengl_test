@@ -4,7 +4,7 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 
-#define PORT 8080
+#define PORT 12346
 
 int main() {
     int sock = 0;
@@ -20,7 +20,7 @@ int main() {
     serv_addr.sin_port = htons(PORT);
 
     // Convert IPv4 and connect
-    if (inet_pton(AF_INET, "127.0.0.1", &serv_addr.sin_addr) <= 0) {
+    if (inet_pton(AF_INET, "50.188.120.138", &serv_addr.sin_addr) <= 0) {
         perror("Invalid address or address not supported");
         return -1;
     }
