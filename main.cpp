@@ -192,6 +192,7 @@ unsigned int createTextShader(const char *vertexShaderSource, const char *fragme
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window, float &cameraSpeed, glm::vec3 &cameraPos, glm::vec3 &cameraFront, glm::vec3 &cameraUp, float &yaw, float &pitch);
 
+
 int main() {
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -250,6 +251,45 @@ int main() {
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
+
+    // Define cube vertices and indices
+    float cubeVertices[] = {
+        -0.5f, -0.5f, -0.5f,
+         0.5f, -0.5f, -0.5f,
+         0.5f,  0.5f, -0.5f,
+        -0.5f,  0.5f, -0.5f,
+        -0.5f, -0.5f,  0.5f,
+         0.5f, -0.5f,  0.5f,
+         0.5f,  0.5f,  0.5f,
+        -0.5f,  0.5f,  0.5f,
+    };
+
+    unsigned int cubeIndices[] = {
+        0, 1, 2, 2, 3, 0, // Back face
+        4, 5, 6, 6, 7, 4, // Front face
+        4, 5, 1, 1, 0, 4, // Bottom face
+        7, 6, 2, 2, 3, 7, // Top face
+        4, 7, 3, 3, 0, 4, // Left face
+        5, 6, 2, 2, 1, 5  // Right face
+    };
+
+    unsigned int cubeVAO, cubeVBO, cubeEBO;
+    glGenVertexArrays(1, &cubeVAO);
+    glGenBuffers(1, &cubeVBO);
+    glGenBuffers(1, &cubeEBO);
+
+    glBindVertexArray(cubeVAO);
+
+    glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(cubeVertices), cubeVertices, GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cubeEBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(cubeIndices), cubeIndices, GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)0);
+    glEnableVertexAttribArray(0);
+
+    glBindVertexArray(0);
 
     glm::vec3 cameraPos(0.0f, 0.0f, 2.0f);
     glm::vec3 cameraFront(0.0f, -0.5f, -1.0f);
@@ -313,6 +353,16 @@ int main() {
             }
         }
 
+        // Draw a green cube on the chessboard at (4, 1, 4)
+        glm::mat4 cubeModel = glm::translate(glm::mat4(1.0f), glm::vec3(4.0f, 0.5f, 4.0f));
+        glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, glm::value_ptr(cubeModel));
+        glUniform3fv(glGetUniformLocation(shaderProgram, "color"), 1, glm::value_ptr(glm::vec3(0.0f, 1.0f, 0.0f)));
+        glBindVertexArray(cubeVAO);
+        glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+
         std::string x_str = std::to_string(std::round(10.0f * cameraPos[0]) * 0.1f);
         x_str = x_str.substr(0, x_str.find('.') + 2);
         std::string z_str = std::to_string(std::round(10.0f * cameraPos[2]) * 0.1f);
@@ -335,6 +385,9 @@ int main() {
 
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
+    glDeleteVertexArrays(1, &cubeVAO);
+    glDeleteBuffers(1, &cubeVBO);
+    glDeleteBuffers(1, &cubeEBO);
 
     glfwTerminate();
     return 0;
