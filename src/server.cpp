@@ -7,6 +7,7 @@
 #include <netinet/in.h>
 #include <unistd.h>
 #include <chrono>
+#include <iomanip>
 
 #define PORT 12346
 
@@ -26,7 +27,7 @@ void broadcast(const std::string& message) {
 void handle_client(int client_socket) {
     std::cout << "Client connected: " << client_socket << std::endl;
     while (server_running) {
-        std::this_thread::sleep_for(std::chrono::seconds(1));
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
     close(client_socket);
 
@@ -74,18 +75,41 @@ int main() {
     std::cout << "Server listening on port " << PORT << std::endl;
 
     // Thread to broadcast uptime to all clients
+
+    
+
     std::thread broadcaster([&]() {
+        std::string last_message = ""; // Keep track of the last message sent
+
         while (server_running) {
             auto current_time = std::chrono::steady_clock::now();
             std::chrono::duration<double> elapsed_time = current_time - start_time;
-            std::string message = "Server uptime: " + std::to_string(elapsed_time.count()) + " seconds\n";
-            broadcast(message);
-            std::this_thread::sleep_for(std::chrono::seconds(1));
+
+            // Format the elapsed time with fixed precision
+            std::ostringstream oss;
+            oss << std::fixed << std::setprecision(2) << elapsed_time.count();
+            std::string message = oss.str();
+
+            // Check if the message is a valid floating-point number
+            if (message.find_first_not_of("0123456789.-") == std::string::npos) {
+                // Ensure it is not concatenated and different from the last message
+                if (message != last_message) {
+                    broadcast(message);
+                    last_message = message;   // Update last message sent
+                }
+            } else {
+                std::cerr << "Invalid message detected: " << message << std::endl;
+            }
+
+            std::this_thread::sleep_for(std::chrono::milliseconds(20));
         }
     });
 
+
+    
+
     // Accept client connections in the main thread
-    while (server_running) {
+    while (1 == 1) {
         int new_socket = accept(server_fd, (struct sockaddr *)&address, (socklen_t *)&addrlen);
         if (new_socket >= 0) {
             {
