@@ -47,7 +47,7 @@ int main()
     }
 
     // Initialize Camera
-    Camera camera(glm::vec3(0.0f, 0.0f, 2.0f));
+    Camera camera(glm::vec3(0.0f, 2.0f, 2.0f));
 
     // Compile shaders
     unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
@@ -206,6 +206,8 @@ int main()
         // Render Text
         std::string x_str = std::to_string(std::round(10.0f * camera.Position.x) * 0.1f);
         x_str = x_str.substr(0, x_str.find('.') + 2);
+        std::string y_str = std::to_string(std::round(10.0f * camera.Position.y) * 0.1f);
+        y_str = y_str.substr(0, y_str.find('.') + 2);
         std::string z_str = std::to_string(std::round(10.0f * camera.Position.z) * 0.1f);
         z_str = z_str.substr(0, z_str.find('.') + 2);
 
@@ -217,7 +219,7 @@ int main()
         std::string time_str = std::to_string(std::round(10.0f * glfwGetTime()) * 0.1f);
         time_str = time_str.substr(0, time_str.find('.') + 2);
 
-        std::string full_str = "X: " + x_str + "   Z: " + z_str + "   Yw: " + yaw_str + "   P: " + pitch_str + "   T: " + time_str;
+        std::string full_str = "X: " + x_str + "   Y: " + y_str + "   Z: " + z_str + "   Yw: " + yaw_str + "   P: " + pitch_str + "   T: " + time_str;
 
         renderText(textShader, full_str, 25.0f, 550.0f, 0.5f, glm::vec3(1.0f, 0.0f, 1.0f));
 
