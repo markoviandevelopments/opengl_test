@@ -25,6 +25,7 @@
 #include "camera.h"
 #include "input_handler.h"
 #include "input_handler.h"
+#include "Cube.h"
 
 #include <map>
 
@@ -138,44 +139,7 @@ int main()
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
-    // Define cube vertices and indices
-    float cubeVertices[] = {
-        -0.5f, -0.5f, -0.5f,
-         0.5f, -0.5f, -0.5f,
-         0.5f,  0.5f, -0.5f,
-        -0.5f,  0.5f, -0.5f,
-        -0.5f, -0.5f,  0.5f,
-         0.5f, -0.5f,  0.5f,
-         0.5f,  0.5f,  0.5f,
-        -0.5f,  0.5f,  0.5f,
-    };
-
-    unsigned int cubeIndices[] = {
-        0, 1, 2, 2, 3, 0, // Back face
-        4, 5, 6, 6, 7, 4, // Front face
-        4, 5, 1, 1, 0, 4, // Bottom face
-        7, 6, 2, 2, 3, 7, // Top face
-        4, 7, 3, 3, 0, 4, // Left face
-        5, 6, 2, 2, 1, 5  // Right face
-    };
-
-    unsigned int cubeVAO, cubeVBO, cubeEBO;
-    glGenVertexArrays(1, &cubeVAO);
-    glGenBuffers(1, &cubeVBO);
-    glGenBuffers(1, &cubeEBO);
-
-    glBindVertexArray(cubeVAO);
-
-    glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(cubeVertices), cubeVertices, GL_STATIC_DRAW);
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cubeEBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(cubeIndices), cubeIndices, GL_STATIC_DRAW);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)0);
-    glEnableVertexAttribArray(0);
-
-    glBindVertexArray(0);
+    Cube cube;
 
     float deltaTime = 0.0f;
     float lastFrame = 0.0f;
@@ -251,17 +215,7 @@ int main()
         }
 
         // Draw a green cube on the chessboard at (4, 1, 4)
-        glm::mat4 cubeModel = glm::translate(glm::mat4(1.0f), glm::vec3(10.0f + sin(server_time * 0.01f) * 5.0f, 0.5f, 10.0f + cos(server_time * 0.01f) * 5.0f));
-        glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, glm::value_ptr(cubeModel));
-        glUniform3fv(glGetUniformLocation(shaderProgram, "color"), 1, glm::value_ptr(glm::vec3(0.0f, 1.0f, 0.0f)));
-        glBindVertexArray(cubeVAO);
-        glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
-
-        // Draw the wireframe outline
-        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); // Wireframe mode
-        glLineWidth(2.0f); // Optional: Set outline thickness
-        glUniform3fv(glGetUniformLocation(shaderProgram, "color"), 1, glm::value_ptr(glm::vec3(0.1f, 0.0f, 1.0f))); // Red outline
-        glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+        cube.draw(shaderProgram, view, projection, server_time);
 
         // Reset to default (solid) mode
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -289,9 +243,6 @@ int main()
 
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
-    glDeleteVertexArrays(1, &cubeVAO);
-    glDeleteBuffers(1, &cubeVBO);
-    glDeleteBuffers(1, &cubeEBO);
 
     glfwTerminate();
 
