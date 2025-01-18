@@ -366,7 +366,14 @@ int main() {
         x_str = x_str.substr(0, x_str.find('.') + 2);
         std::string z_str = std::to_string(std::round(10.0f * cameraPos[2]) * 0.1f);
         z_str = z_str.substr(0, z_str.find('.') + 2);
-        std::string full_str = "X: " + x_str + "   Z: " + z_str;
+
+        std::string pitch_str = std::to_string(std::round(10.0f * pitch) * 0.1f);
+        pitch_str = pitch_str.substr(0, pitch_str.find('.') + 2);
+        std::string yaw_str = std::to_string(std::round(10.0f * yaw) * 0.1f);
+        yaw_str = yaw_str.substr(0, yaw_str.find('.') + 2);
+
+
+        std::string full_str = "X: " + x_str + "   Z: " + z_str + "   Yaw: " + yaw_str + "   Pitch: " + pitch_str;
         
 
         renderText(textShader, full_str, 25.0f, 550.0f, 0.5f, glm::vec3(1.0f, 0.0f, 1.0f)); // Adjust scale
