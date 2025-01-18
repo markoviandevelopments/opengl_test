@@ -298,6 +298,10 @@ int main() {
                 glm::vec3 position(col, 0.0f, row);
                 glm::vec3 color = (row + col) % 2 == 0 ? glm::vec3(1.0f) : glm::vec3(0.0f);
 
+                if (color[0] < 0.5f) {
+                    color = glm::vec3(sin((5.0f * sin(row) + col) * 0.4f), 0.0f, 0.0f);
+                }
+
                 glm::mat4 model = glm::translate(glm::mat4(1.0f), position);
                 glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, glm::value_ptr(model));
 
