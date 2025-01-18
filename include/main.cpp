@@ -7,9 +7,17 @@
 #include <iostream>
 #include <sstream>
 #include <iomanip>
+#include <sstream>
+#include <iomanip>
 #include <ft2build.h>
 #include <string>
 #include <cmath>
+#include <cstring>
+#include <sys/socket.h>
+#include <arpa/inet.h>
+#include <unistd.h>
+
+
 #include <cstring>
 #include <sys/socket.h>
 #include <arpa/inet.h>
@@ -22,6 +30,7 @@
 #include "shaders.h"
 #include "camera.h"
 #include "input_handler.h"
+#include "input_handler.h"
 
 #include <map>
 
@@ -32,11 +41,13 @@ unsigned int VAO_text, VBO_text;
 std::string formatFloat(float value)
 {
     std::ostringstream stream;
-    stream << std::fixed << std::setprecision(1) << value;
+    stream << std::fixed << std::setprecision(2) << value;
     return stream.str();
 }
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height);
+
+#define PORT 12346
 
 #define PORT 12346
 
@@ -92,8 +103,38 @@ int main()
 
 
 
+    // Connect to Server
+    int sock = 0;
+    struct sockaddr_in serv_addr;
+
+    // Create socket
+    if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+        perror("Socket creation error");
+        return -1;
+    }
+
+    serv_addr.sin_family = AF_INET;
+    serv_addr.sin_port = htons(PORT);
+
+    // Convert IPv4 and connect
+    if (inet_pton(AF_INET, "50.188.120.138", &serv_addr.sin_addr) <= 0) {
+        perror("Invalid address or address not supported");
+        return -1;
+    }
+
+    if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) {
+        perror("Connection failed");
+        return -1;
+    }
+
+    char buffer[1024] = {0};
+
+
+
     // Initialize Camera
     Camera camera(glm::vec3(0.0f, 2.0f, 2.0f));
+
+    bool isRunning = false;
 
     bool isRunning = false;
 
@@ -214,10 +255,27 @@ int main()
         float server_time = std::stof(server_time_str);
 
 
+
+        // Get information from Server
+        std::string server_time_str;
+        int valread = read(sock, buffer, 1024);
+        if (valread > 0) {
+            //std::cout << buffer;
+            server_time_str = "";
+            server_time_str = buffer;
+            memset(buffer, 0, sizeof(buffer)); // Clear buffer
+        } else {
+            break; // Exit loop if server disconnects
+        }
+
+        float server_time = std::stof(server_time_str);
+
+
         float currentFrame = glfwGetTime();
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
+        processInput(window, camera, deltaTime, isRunning);
         processInput(window, camera, deltaTime, isRunning);
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -249,6 +307,7 @@ int main()
 
         // Draw a green cube on the chessboard at (4, 1, 4)
         glm::mat4 cubeModel = glm::translate(glm::mat4(1.0f), glm::vec3(10.0f + sin(server_time * 0.01f) * 5.0f, 0.5f, 10.0f + cos(server_time * 0.01f) * 5.0f));
+        glm::mat4 cubeModel = glm::translate(glm::mat4(1.0f), glm::vec3(10.0f + sin(server_time * 0.01f) * 5.0f, 0.5f, 10.0f + cos(server_time * 0.01f) * 5.0f));
         glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, glm::value_ptr(cubeModel));
         glUniform3fv(glGetUniformLocation(shaderProgram, "color"), 1, glm::value_ptr(glm::vec3(0.0f, 1.0f, 0.0f)));
         glBindVertexArray(cubeVAO);
@@ -257,7 +316,7 @@ int main()
         // Draw the wireframe outline
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); // Wireframe mode
         glLineWidth(2.0f); // Optional: Set outline thickness
-        glUniform3fv(glGetUniformLocation(shaderProgram, "color"), 1, glm::value_ptr(glm::vec3(0.0f, 0.0f, 1.0f))); // Blue outline
+        glUniform3fv(glGetUniformLocation(shaderProgram, "color"), 1, glm::value_ptr(glm::vec3(0.1f, 0.0f, 1.0f))); // Red outline
         glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 
         // Reset to default (solid) mode
@@ -274,12 +333,12 @@ int main()
                                "   Z: " + formatFloat(camera.Position.z) +
                                "   Yw: " + formatFloat(camera.Yaw) +
                                "   P: " + formatFloat(camera.Pitch) +
-                               "   T: " + formatFloat(glfwGetTime()) +
-                               "   B: " + formatFloat(server_time);
+                               "   T: " + formatFloat(glfwGetTime());
 
-        renderText(textShader, full_str, 25.0f, 550.0f, 0.5f, glm::vec3(1.0f, 0.0f, 1.0f));
+        renderText(textShader, full_str, 25.0f, 550.0f, 0.5f, glm::vec3(0.8f, 0.8f, 0.0f));
+        renderText(textShader, "B: " + formatFloat(server_time), 25.0f, 500.0f, 0.5f, glm::vec3(0.8f, 0.8f, 0.0f));
 
-        glEnable(GL_DEPTH_TEST);
+            glEnable(GL_DEPTH_TEST);
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
@@ -291,6 +350,9 @@ int main()
     glDeleteBuffers(1, &cubeEBO);
 
     glfwTerminate();
+
+    close(sock);
+
 
     close(sock);
 
