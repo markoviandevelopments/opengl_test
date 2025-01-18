@@ -30,13 +30,17 @@ int main() {
         return -1;
     }
 
-    // Receive message from server
     char buffer[1024] = {0};
-    int valread = read(sock, buffer, 1024);
-    std::cout << "Message from server: " << buffer << std::endl;
+    while (true) {
+        int valread = read(sock, buffer, 1024);
+        if (valread > 0) {
+            std::cout << buffer;
+            memset(buffer, 0, sizeof(buffer)); // Clear buffer
+        } else {
+            break; // Exit loop if server disconnects
+        }
+    }
 
-    // Close socket
     close(sock);
-
     return 0;
 }
