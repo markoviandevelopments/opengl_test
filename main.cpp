@@ -5,6 +5,8 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <iostream>
 #include <ft2build.h>
+#include <string>
+#include <cmath>
 #include FT_FREETYPE_H
 
 #include <map>
@@ -360,7 +362,14 @@ int main() {
             }
         }
 
-        renderText(textShader, "Shoutout Presteroni!!", 25.0f, 550.0f, 0.5f, glm::vec3(1.0f, 0.0f, 1.0f)); // Adjust scale
+        std::string x_str = std::to_string(std::round(10.0f * cameraPos[0]) * 0.1f);
+        x_str = x_str.substr(0, x_str.find('.') + 2);
+        std::string z_str = std::to_string(std::round(10.0f * cameraPos[2]) * 0.1f);
+        z_str = z_str.substr(0, z_str.find('.') + 2);
+        std::string full_str = "X: " + x_str + "   Z: " + z_str;
+        
+
+        renderText(textShader, full_str, 25.0f, 550.0f, 0.5f, glm::vec3(1.0f, 0.0f, 1.0f)); // Adjust scale
 
         glfwSwapBuffers(window);
         glfwPollEvents();
