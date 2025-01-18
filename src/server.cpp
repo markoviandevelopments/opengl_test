@@ -18,8 +18,14 @@ bool server_running = true;
 // Function to broadcast messages to all clients
 void broadcast(const std::string& message) {
     std::lock_guard<std::mutex> lock(client_mutex);
-    for (auto client : clients) {
-        send(client, message.c_str(), message.length(), 0);
+    for (auto it = clients.begin(); it != clients.end();) {
+        if (send(*it, message.c_str(), message.length(), 0) < 0) {
+            std::cerr << "Error sending to client: " << *it << ". Removing client." << std::endl;
+            close(*it); // Close the socket
+            it = clients.erase(it); // Remove client from list
+        } else {
+            ++it;
+        }
     }
 }
 
@@ -27,20 +33,23 @@ void broadcast(const std::string& message) {
 void handle_client(int client_socket) {
     std::cout << "Client connected: " << client_socket << std::endl;
     while (server_running) {
-        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        char buffer[1024] = {0};
+        int bytes_read = recv(client_socket, buffer, 1024, 0);
+        if (bytes_read <= 0) {
+            break; // Client disconnected or error occurred
+        }
+        std::cout << "Received from client " << client_socket << ": " << buffer << std::endl;
     }
+
     close(client_socket);
 
     {
         std::lock_guard<std::mutex> lock(client_mutex);
-
+        //clients.erase(std::remove(clients.begin(), clients.end(), client_socket), clients.end());
     }
 
     std::cout << "Client disconnected: " << client_socket << std::endl;
 }
-
-
-
 
 int main() {
     int server_fd;
@@ -75,9 +84,6 @@ int main() {
     std::cout << "Server listening on port " << PORT << std::endl;
 
     // Thread to broadcast uptime to all clients
-
-    
-
     std::thread broadcaster([&]() {
         std::string last_message = ""; // Keep track of the last message sent
 
@@ -90,26 +96,18 @@ int main() {
             oss << std::fixed << std::setprecision(2) << elapsed_time.count();
             std::string message = oss.str();
 
-            // Check if the message is a valid floating-point number
-            if (message.find_first_not_of("0123456789.-") == std::string::npos) {
-                // Ensure it is not concatenated and different from the last message
-                if (message != last_message) {
-                    broadcast(message);
-                    last_message = message;   // Update last message sent
-                }
-            } else {
-                std::cerr << "Invalid message detected: " << message << std::endl;
+            // Ensure the message is different from the last message
+            if (message != last_message) {
+                broadcast(message);
+                last_message = message;
             }
 
             std::this_thread::sleep_for(std::chrono::milliseconds(20));
         }
     });
 
-
-    
-
     // Accept client connections in the main thread
-    while (1 == 1) {
+    while (server_running) {
         int new_socket = accept(server_fd, (struct sockaddr *)&address, (socklen_t *)&addrlen);
         if (new_socket >= 0) {
             {
