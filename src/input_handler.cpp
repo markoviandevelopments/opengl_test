@@ -1,8 +1,9 @@
 #include "input_handler.h"
 #include "camera.h"     // For Camera class
 #include <GLFW/glfw3.h> // For GLFWwindow
+#include <iostream>     // For std::cout and std::endl
 
-void processInput(GLFWwindow *window, Camera &camera, float deltaTime, bool &isRunning)
+void processInput(GLFWwindow *window, Camera &camera, float deltaTime, bool &isRunning, bool &isPartyMode)
 {
     // Detect "run" state
     isRunning = glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS;
@@ -29,4 +30,16 @@ void processInput(GLFWwindow *window, Camera &camera, float deltaTime, bool &isR
         camera.ProcessMouseMovement(-sensitivity, 0.0f);
     if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
         camera.ProcessMouseMovement(sensitivity, 0.0f);
+
+    // Toggle party mode with 'P' key
+    static bool pKeyPressedLastFrame = false;
+    if (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS && !pKeyPressedLastFrame)
+    {
+        isPartyMode = !isPartyMode; // Toggle party mode
+        if (isPartyMode)
+            std::cout << "Party mode activated!" << std::endl;
+        else
+            std::cout << "Party mode deactivated!" << std::endl;
+    }
+    pKeyPressedLastFrame = glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS;
 }

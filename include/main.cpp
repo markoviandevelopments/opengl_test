@@ -29,6 +29,7 @@
 #include "cube.h"
 #include "player.h"
 #include "player2.h"
+#include "chessboard.h"
 
 #include <map>
 
@@ -49,6 +50,7 @@ void framebuffer_size_callback(GLFWwindow *window, int width, int height);
 
 int main()
 {
+
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -101,12 +103,14 @@ int main()
 
     char buffer[1024] = {0};
 
+    Chessboard chessboard;
+    chessboard.initialize();
 
     // Initialize Camera
     Camera camera(glm::vec3(0.0f, 2.0f, 2.0f));
 
     bool isRunning = false;
-
+    bool isPartyMode = false;
 
     // Compile shaders
     unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
@@ -149,6 +153,7 @@ int main()
     Cube cube;
     Player player;
     Player2 player2;
+    
 
     float deltaTime = 0.0f;
     float lastFrame = 0.0f;
@@ -233,17 +238,11 @@ int main()
             break; // Exit loop if server disconnects
         }
 
-
-        
-
-
-
         float currentFrame = glfwGetTime();
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
-        processInput(window, camera, deltaTime, isRunning);
-        processInput(window, camera, deltaTime, isRunning);
+        processInput(window, camera, deltaTime, isRunning, isPartyMode);
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -254,22 +253,13 @@ int main()
         glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "view"), 1, GL_FALSE, glm::value_ptr(view));
         glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
 
-        for (int row = 0; row < 32; ++row) {
-            for (int col = 0; col < 32; ++col) {
-                glm::vec3 position(col, 0.0f, row);
-                glm::vec3 color = (row + col) % 2 == 0 ? glm::vec3(1.0f) : glm::vec3(0.0f);
-
-                if (color[0] < 0.5f) {
-                    color = glm::vec3(sin((5.0f * sin(row) + col) * 0.4f), 0.0f, 0.0f);
-                }
-
-                glm::mat4 model = glm::translate(glm::mat4(1.0f), position);
-                glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, glm::value_ptr(model));
-
-                glUniform3fv(glGetUniformLocation(shaderProgram, "color"), 1, glm::value_ptr(color));
-                glBindVertexArray(VAO);
-                glDrawArrays(GL_TRIANGLES, 0, 6);
-            }
+        if (isPartyMode)
+        {
+            chessboard.drawDynamicFloor(shaderProgram, view, projection, server_time);
+        }
+        else
+        {
+            chessboard.drawChessboard(shaderProgram, view, projection);
         }
 
         // Draw a green cube on the chessboard at (4, 1, 4)

@@ -4,6 +4,6 @@
 #include <GLFW/glfw3.h>
 #include "camera.h"
 
-void processInput(GLFWwindow *window, Camera &camera, float deltaTime, bool &isRunning);
+void processInput(GLFWwindow *window, Camera &camera, float deltaTime, bool &isRunning, bool &isPartyMode);
 
 #endif // INPUT_HANDLER_H
