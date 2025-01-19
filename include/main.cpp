@@ -30,6 +30,7 @@
 #include "player.h"
 #include "player2.h"
 #include "chessboard.h"
+#include "draw_food_grid.h"
 
 #include <map>
 
@@ -105,6 +106,9 @@ int main()
 
     Chessboard chessboard;
     chessboard.initialize();
+
+    FoodGrid foodgrid;
+    foodgrid.initialize();
 
     // Initialize Camera
     Camera camera(glm::vec3(0.0f, 2.0f, 2.0f));
@@ -262,6 +266,8 @@ int main()
             chessboard.drawChessboard(shaderProgram, view, projection);
         }
 
+        foodgrid.drawFoodGrid(shaderProgram, view, projection);
+
         // Draw a green cube on the chessboard at (4, 1, 4)
         cube.draw(shaderProgram, view, projection, server_time);
 
@@ -292,7 +298,9 @@ int main()
                                "   T: " + formatFloat(glfwGetTime());
 
         renderText(textShader, full_str, 25.0f, 550.0f, 0.5f, glm::vec3(0.8f, 0.8f, 0.0f));
-        renderText(textShader, "B: " + formatFloat(server_time), 25.0f, 500.0f, 0.5f, glm::vec3(0.8f, 0.8f, 0.0f));
+        std::string full_str_2 = "B: " + formatFloat(server_time) +
+                                "    Random: " + formatFloat(gameState[8]);
+        renderText(textShader, full_str_2, 25.0f, 500.0f, 0.5f, glm::vec3(0.8f, 0.8f, 0.0f));
 
             glEnable(GL_DEPTH_TEST);
         glfwSwapBuffers(window);

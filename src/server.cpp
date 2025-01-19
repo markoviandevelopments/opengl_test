@@ -15,7 +15,7 @@
 #define PORT 12346
 
 std::array<std::optional<int>, 2> clients; // Fixed size for 2 players, using optional for empty slots
-std::array<float, 9> game_state;          // Server time + Player 1 coords + Player 2 coords
+std::array<float, 74> game_state;          // Server time + Player 1 coords + Player 2 coords
 std::mutex state_mutex;                   // Mutex to protect `game_state`
 std::mutex client_mutex;                  // Mutex to protect `clients`
 bool server_running = true;
@@ -104,9 +104,20 @@ int main() {
     int addrlen = sizeof(address);
 
     // Initialize game state: server time, player 1 coords, player 2 coords
+    /*
+    
+    INDEX | Purpose
+    0     | server time
+    1-6   | Players coordinates
+    7     | Increments
+    8     | Random number up to 10
+    10-73 | Tile food amounts
+
+
+    */
     {
         std::lock_guard<std::mutex> lock(state_mutex);
-        game_state = {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f};
+        game_state.fill(0.0f);
     }
 
     // Initialize the client slots
