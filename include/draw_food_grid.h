@@ -2,6 +2,7 @@
 #define FOODGRID_H
 
 #include <glm/glm.hpp>
+#include <vector>
 
 class FoodGrid
 {
@@ -13,8 +14,7 @@ public:
     ~FoodGrid();
 
     void initialize(); // Explicit initialization
-    void draw(unsigned int shaderProgram, const glm::mat4 &view, const glm::mat4 &projection);
-    void drawFoodGrid(unsigned int shaderProgram, const glm::mat4 &view, const glm::mat4 &projection);
+    void drawFoodGrid(unsigned int shaderProgram, const glm::mat4 &view, const glm::mat4 &projection, const std::vector<float>& gameState);
 };
 
 #endif // FOODGRID_H

@@ -79,6 +79,7 @@ void handle_client(int client_socket, int player_index) {
         } catch (const std::exception& e) {
             std::cerr << "Error processing input from Player " << player_index + 1 << ": " << e.what() << std::endl;
         }
+        std::this_thread::sleep_for(std::chrono::milliseconds(20));
     }
 
     close(client_socket);
@@ -165,7 +166,7 @@ int main() {
             }
 
             broadcast_game_state();
-            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+            std::this_thread::sleep_for(std::chrono::milliseconds(20));
         }
     });
 
@@ -177,9 +178,11 @@ int main() {
                 // Example: Update game_state values (indexes 5 and 6) with dummy logic
                 game_state[7] += 1.0f; // Increment a value
                 game_state[8] = static_cast<float>(std::rand() % 100) / 10.0f; // Random value
+                int randomNumber = 10 + std::rand() % (73 - 10 + 1);
+                game_state[randomNumber] = static_cast<float>(std::rand() % 10000) / 1000.0f;
             }
 
-            std::this_thread::sleep_for(std::chrono::milliseconds(100)); // Wait for 100 ms
+            std::this_thread::sleep_for(std::chrono::milliseconds(20)); // Wait for 100 ms
         }
     });
 

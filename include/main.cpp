@@ -266,14 +266,16 @@ int main()
             chessboard.drawChessboard(shaderProgram, view, projection);
         }
 
-        foodgrid.drawFoodGrid(shaderProgram, view, projection);
+        
 
         // Draw a green cube on the chessboard at (4, 1, 4)
         cube.draw(shaderProgram, view, projection, server_time);
 
+        
         player.draw(shaderProgram, view, projection, server_time, camera);
 
         if (!gameState.empty()) {
+            foodgrid.drawFoodGrid(shaderProgram, view, projection, gameState);
             std::cout << "Player 1 x pos: " << gameState[1] << std::endl;
             player2.draw(shaderProgram, view, projection, server_time, gameState[1], gameState[2], gameState[3]);
             player2.draw(shaderProgram, view, projection, server_time, gameState[4], gameState[5], gameState[6]);
@@ -299,7 +301,7 @@ int main()
 
         renderText(textShader, full_str, 25.0f, 550.0f, 0.5f, glm::vec3(0.8f, 0.8f, 0.0f));
         std::string full_str_2 = "B: " + formatFloat(server_time) +
-                                "    Random: " + formatFloat(gameState[8]);
+                                "    Random: " + formatFloat(gameState[23]);
         renderText(textShader, full_str_2, 25.0f, 500.0f, 0.5f, glm::vec3(0.8f, 0.8f, 0.0f));
 
             glEnable(GL_DEPTH_TEST);
