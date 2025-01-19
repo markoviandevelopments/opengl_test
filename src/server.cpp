@@ -15,7 +15,7 @@
 #define PORT 12346
 
 std::array<std::optional<int>, 2> clients; // Fixed size for 2 players, using optional for empty slots
-std::array<float, 7> game_state;          // Server time + Player 1 coords + Player 2 coords
+std::array<float, 9> game_state;          // Server time + Player 1 coords + Player 2 coords
 std::mutex state_mutex;                   // Mutex to protect `game_state`
 std::mutex client_mutex;                  // Mutex to protect `clients`
 bool server_running = true;
@@ -106,7 +106,7 @@ int main() {
     // Initialize game state: server time, player 1 coords, player 2 coords
     {
         std::lock_guard<std::mutex> lock(state_mutex);
-        game_state = {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f};
+        game_state = {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f};
     }
 
     // Initialize the client slots
@@ -155,6 +155,20 @@ int main() {
 
             broadcast_game_state();
             std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        }
+    });
+
+    std::thread game_state_manager([&]() {
+        while (server_running) {
+            {
+                std::lock_guard<std::mutex> lock(state_mutex);
+                
+                // Example: Update game_state values (indexes 5 and 6) with dummy logic
+                game_state[7] += 1.0f; // Increment a value
+                game_state[8] = static_cast<float>(std::rand() % 100) / 10.0f; // Random value
+            }
+
+            std::this_thread::sleep_for(std::chrono::milliseconds(100)); // Wait for 100 ms
         }
     });
 
