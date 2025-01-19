@@ -8,6 +8,10 @@
 
 #include "camera.h"
 
+
+
+extern glm::vec3 playerPosition;
+
 class Player {
 public:
     Player();  // Constructor to initialize Player data

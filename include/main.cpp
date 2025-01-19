@@ -16,6 +16,7 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <unistd.h>
+#include <vector>
 
 
 #include FT_FREETYPE_H
@@ -27,6 +28,7 @@
 #include "input_handler.h"
 #include "cube.h"
 #include "player.h"
+#include "player2.h"
 
 #include <map>
 
@@ -68,6 +70,10 @@ int main()
         std::cerr << "Failed to initialize GLAD" << std::endl;
         return -1;
     }
+
+    std::vector<float> gameState;
+    glm::vec3 playerPosition(0.0f, 0.0f, 0.0f); // Default player position
+
 
     // Connect to Server
     int sock = 0;
@@ -142,6 +148,7 @@ int main()
 
     Cube cube;
     Player player;
+    Player2 player2;
 
     float deltaTime = 0.0f;
     float lastFrame = 0.0f;
@@ -166,21 +173,70 @@ int main()
 
     glClearColor(0.2f, 0.3f, 0.5f, 1.0f);
 
+
     while (!glfwWindowShouldClose(window)) {
 
-        // Get information from Server
-        std::string server_time_str;
-        int valread = read(sock, buffer, 1024);
+        playerPosition.x = camera.Position.x;
+        playerPosition.y = camera.Position.y;
+        playerPosition.z = camera.Position.z;
+
+        float server_time = 0.0f;
+        std::string server_time_str = "0.00";
+
+        // Send player's current position to the server
+        std::ostringstream positionStream;
+        positionStream << playerPosition.x << "," << playerPosition.y << "," << playerPosition.z;
+        std::string positionMessage = positionStream.str();
+        if (send(sock, positionMessage.c_str(), positionMessage.length(), 0) < 0) {
+            std::cerr << "Error sending player position to server." << std::endl;
+            break;
+        }
+
+        // Receive information from the server
+        int valread = read(sock, buffer, sizeof(buffer));
         if (valread > 0) {
-            //std::cout << buffer;
-            server_time_str = "";
-            server_time_str = buffer;
+            std::string serverMessage(buffer, valread);
             memset(buffer, 0, sizeof(buffer)); // Clear buffer
+            gameState.clear();
+            // Parse the server message into a vector of floats
+            std::istringstream messageStream(serverMessage);
+            std::string value;
+            while (std::getline(messageStream, value, ',')) {
+                try {
+                    gameState.push_back(std::stof(value));
+                } catch (const std::exception& e) {
+                    std::cerr << "Error parsing value: " << value << " - " << e.what() << std::endl;
+                }
+            }
+
+            // Print the parsed game state for debugging
+            std::cout << "Server time: " << gameState[0] << std::endl;
+            std::cout << "Player 1 Position: (" << gameState[1] << ", " << gameState[2] << ", " << gameState[3] << ")" << std::endl;
+            std::cout << "Player 2 Position: (" << gameState[4] << ", " << gameState[5] << ", " << gameState[6] << ")" << std::endl;
+            if (!gameState.empty()) { // Ensure the vector is not empty
+                server_time = gameState[0]; // Get server_time as a float
+
+                // Convert server_time to a string with fixed-point precision
+                std::ostringstream oss;
+                oss << std::fixed << std::setprecision(2) << server_time;
+                server_time_str = oss.str();
+
+                // Debug output to verify
+                std::cout << "Server time as float: " << server_time << std::endl;
+                std::cout << "Server time as string: " << server_time_str << std::endl;
+            } else {
+                std::cerr << "Error: gameState is empty. Cannot set server_time or server_time_str." << std::endl;
+                
+            }
         } else {
+            std::cerr << "Disconnected from server or error reading data." << std::endl;
             break; // Exit loop if server disconnects
         }
 
-        float server_time = std::stof(server_time_str);
+
+        
+
+
 
         float currentFrame = glfwGetTime();
         deltaTime = currentFrame - lastFrame;
@@ -220,6 +276,14 @@ int main()
         cube.draw(shaderProgram, view, projection, server_time);
 
         player.draw(shaderProgram, view, projection, server_time, camera);
+
+        if (!gameState.empty()) {
+            std::cout << "Player 1 x pos: " << gameState[1] << std::endl;
+            player2.draw(shaderProgram, view, projection, server_time, gameState[1], gameState[2], gameState[3]);
+            player2.draw(shaderProgram, view, projection, server_time, gameState[4], gameState[5], gameState[6]);
+        } else {
+            std::cout << "EMPTY..." << std::endl;
+        }
 
         // Reset to default (solid) mode
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
