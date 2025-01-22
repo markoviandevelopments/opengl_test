@@ -32,6 +32,7 @@
 #include "chessboard.h"
 #include "draw_food_grid.h"
 #include "agents.h"
+#include "cube_grid.h"
 
 #include <map>
 
@@ -76,6 +77,7 @@ int main()
     }
 
     std::vector<float> gameState;
+    std::vector<float> gameStateTemp;
     glm::vec3 playerPosition(0.0f, 0.0f, 0.0f); // Default player position
 
 
@@ -159,6 +161,7 @@ int main()
     Player player;
     Player2 player2;
     Agents agents;
+    CubeGrid cube_grid;
     
 
     float deltaTime = 0.0f;
@@ -183,7 +186,8 @@ int main()
     glm::mat4 projection = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
 
     glClearColor(0.2f, 0.3f, 0.5f, 1.0f);
-
+    float server_time = 0.0f;
+    std::string server_time_str = "0.00";
 
     while (!glfwWindowShouldClose(window)) {
 
@@ -191,8 +195,7 @@ int main()
         playerPosition.y = camera.Position.y;
         playerPosition.z = camera.Position.z;
 
-        float server_time = 0.0f;
-        std::string server_time_str = "0.00";
+
 
         // Send player's current position to the server
         std::ostringstream positionStream;
@@ -208,37 +211,22 @@ int main()
         if (valread > 0) {
             std::string serverMessage(buffer, valread);
             memset(buffer, 0, sizeof(buffer)); // Clear buffer
-            gameState.clear();
+            gameStateTemp.clear();
             // Parse the server message into a vector of floats
             std::istringstream messageStream(serverMessage);
             std::string value;
             while (std::getline(messageStream, value, ',')) {
                 try {
-                    gameState.push_back(std::stof(value));
+                    gameStateTemp.push_back(std::stof(value));
                 } catch (const std::exception& e) {
                     std::cerr << "Error parsing value: " << value << " - " << e.what() << std::endl;
                 }
             }
 
             // Print the parsed game state for debugging
-            std::cout << "Server time: " << gameState[0] << std::endl;
-            std::cout << "Player 1 Position: (" << gameState[1] << ", " << gameState[2] << ", " << gameState[3] << ")" << std::endl;
-            std::cout << "Player 2 Position: (" << gameState[4] << ", " << gameState[5] << ", " << gameState[6] << ")" << std::endl;
-            if (!gameState.empty()) { // Ensure the vector is not empty
-                server_time = gameState[0]; // Get server_time as a float
-
-                // Convert server_time to a string with fixed-point precision
-                std::ostringstream oss;
-                oss << std::fixed << std::setprecision(2) << server_time;
-                server_time_str = oss.str();
-
-                // Debug output to verify
-                std::cout << "Server time as float: " << server_time << std::endl;
-                std::cout << "Server time as string: " << server_time_str << std::endl;
-            } else {
-                std::cerr << "Error: gameState is empty. Cannot set server_time or server_time_str." << std::endl;
-                
-            }
+            //std::cout << "Server time: " << gameState[0] << std::endl;
+            //std::cout << "Player 1 Position: (" << gameState[1] << ", " << gameState[2] << ", " << gameState[3] << ")" << std::endl;
+            //std::cout << "Player 2 Position: (" << gameState[4] << ", " << gameState[5] << ", " << gameState[6] << ")" << std::endl;
         } else {
             std::cerr << "Disconnected from server or error reading data." << std::endl;
             break; // Exit loop if server disconnects
@@ -276,9 +264,30 @@ int main()
         
         player.draw(shaderProgram, view, projection, server_time, camera);
 
-        if (!gameState.empty()) {
+        if (gameStateTemp.size() == 1078) {
+            for (int i=0; i < 1078; i++) {
+                if (gameState.size() < i + 1) {
+                    gameState.push_back(gameStateTemp[i]);
+                } else {
+                    gameState[i] = gameStateTemp[i];
+                }
+                server_time = gameStateTemp[0]; // Get server_time as a float
+
+                // Convert server_time to a string with fixed-point precision
+                std::ostringstream oss;
+                oss << std::fixed << std::setprecision(2) << server_time;
+                server_time_str = oss.str();
+                
+            }
+        } else {
+            std::cout << "INCOMPLETE LIST... Size: " << gameStateTemp.size() << std::endl;
+        }
+
+        std::cout << "GAMESTATE... Size: " << gameState.size() << std::endl;
+
+        if (gameState.size() == 1078) {
             foodgrid.drawFoodGrid(shaderProgram, view, projection, gameState);
-            std::cout << "Player 1 x pos: " << gameState[1] << std::endl;
+            //std::cout << "Player 1 x pos: " << gameState[1] << std::endl;
             player2.draw(shaderProgram, view, projection, server_time, gameState[1], 0.5f, gameState[3]);
             player2.draw(shaderProgram, view, projection, server_time, gameState[4], 0.5f, gameState[6]);
             for (int i=0; i<2; i++) {
@@ -288,8 +297,8 @@ int main()
                 for (int y=0; y < 10; y++) {
                     for (int z=0; z < 10; z++) {
                         int i = x * 10 * 10 + y * 10 + z;
-                        if (gameState[i + 78] > 0.5f) {
-                            player2.draw(shaderProgram, view, projection, server_time, x, y, z - 40);
+                        if (gameState[i + 78] > 0.1f) {
+                            cube_grid.draw(shaderProgram, view, projection, server_time, x, y, z - 40, gameState[i + 78]);
                         }
                         ;
                     }
@@ -297,7 +306,7 @@ int main()
             }
             
         } else {
-            std::cout << "EMPTY..." << std::endl;
+            std::cout << "INCOMPLETE LIST... Size: " << gameState.size() << std::endl;
         }
 
         // Reset to default (solid) mode

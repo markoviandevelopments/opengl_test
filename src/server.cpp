@@ -79,7 +79,7 @@ void handle_client(int client_socket, int player_index) {
         } catch (const std::exception& e) {
             std::cerr << "Error processing input from Player " << player_index + 1 << ": " << e.what() << std::endl;
         }
-        std::this_thread::sleep_for(std::chrono::milliseconds(20));
+        std::this_thread::sleep_for(std::chrono::milliseconds(5));
     }
 
     close(client_socket);
@@ -128,8 +128,14 @@ int main() {
 
         for (int i=78; i<1078; i++) {
             float randFloat = static_cast<float>(std::rand() % 100) / 100.0f; // Random value
-            if (randFloat < 5.0f || 1 == 1) {
-                game_state[i] = 1.0f;
+            if (randFloat < 0.5f) {
+                float randFloat2 = static_cast<float>(std::rand() % 100) / 100.0f;
+                if (randFloat2 < 0.5f) {
+                    game_state[i] = 1.0f;
+                } else {
+                    game_state[i] = 0.3f;
+                }
+                
             }
         }
     }
@@ -179,7 +185,7 @@ int main() {
             }
 
             broadcast_game_state();
-            std::this_thread::sleep_for(std::chrono::milliseconds(20));
+            std::this_thread::sleep_for(std::chrono::milliseconds(50));
         }
     });
 

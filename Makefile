@@ -11,7 +11,7 @@ INCLUDE_DIR = include
 BUILD_DIR = build
 
 # Source files
-MAIN_SRC = $(INCLUDE_DIR)/main.cpp $(SRC_DIR)/text_renderer.cpp $(SRC_DIR)/camera.cpp $(SRC_DIR)/input_handler.cpp $(SRC_DIR)/cube.cpp $(SRC_DIR)/player.cpp $(SRC_DIR)/player2.cpp $(SRC_DIR)/chessboard.cpp $(SRC_DIR)/draw_food_grid.cpp $(SRC_DIR)/agents.cpp
+MAIN_SRC = $(INCLUDE_DIR)/main.cpp $(SRC_DIR)/text_renderer.cpp $(SRC_DIR)/camera.cpp $(SRC_DIR)/input_handler.cpp $(SRC_DIR)/cube.cpp $(SRC_DIR)/player.cpp $(SRC_DIR)/player2.cpp $(SRC_DIR)/chessboard.cpp $(SRC_DIR)/draw_food_grid.cpp $(SRC_DIR)/agents.cpp $(SRC_DIR)/cube_grid.cpp
 SERVER_SRC = $(SRC_DIR)/server.cpp
 COMMON_SRC = $(GLAD_DIR)/glad.c
 
