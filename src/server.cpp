@@ -130,7 +130,7 @@ int main() {
             float randFloat = static_cast<float>(std::rand() % 100) / 100.0f; // Random value
             if (randFloat < 0.5f) {
                 float randFloat2 = static_cast<float>(std::rand() % 100) / 100.0f;
-                if (randFloat2 < 0.5f) {
+                if (randFloat2 < 0.95f) {
                     game_state[i] = 1.0f;
                 } else {
                     game_state[i] = 0.3f;
@@ -185,7 +185,7 @@ int main() {
             }
 
             broadcast_game_state();
-            std::this_thread::sleep_for(std::chrono::milliseconds(50));
+            std::this_thread::sleep_for(std::chrono::milliseconds(25));
         }
     });
 
@@ -213,9 +213,41 @@ int main() {
                         game_state[i * 2 + 75] = 0.0f;
                     }
                 }
+
+                // 3D GRID
+
+                for (int x=0; x < 10; x++) {
+                    for (int y=0; y < 10; y++) {
+                        for (int z=0; z < 10; z++) {
+                            for (int dx=-1; dx < 2; dx++) {
+                                for (int dy=-1; dy < 2; dy++) {
+                                    for (int dz=-1; dz < 2; dz++) {
+                                        if (x + dx < 0 || x + dx >= 10 ||
+                                            y + dy < 0 || y + dy >= 10 ||
+                                            z + dz < 0 || z + dz >= 10 ||
+                                            (dx == 0 && dy == 0 && dz == 0)) {
+                                            continue;
+                                        }
+                                        int iC = (x + dx) * 10 * 10 + (y + dy) * 10 + (z + dz);
+                                        int i = x * 10 * 10 + y * 10 + z;
+                                        float randomNumber3 = static_cast<float>(std::rand() % 1000) / 1000.0f;
+                                        if (game_state[iC] > 0.0f && game_state[i] > 0.0f && randomNumber3 < 0.001f) {
+                                            float temp = game_state[iC];
+                                            game_state[iC] = game_state[i];
+                                            game_state[i] = temp;
+                                        }
+                                    
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+
             }
 
-            std::this_thread::sleep_for(std::chrono::milliseconds(20)); // Wait
+            std::this_thread::sleep_for(std::chrono::milliseconds(50)); // Wait
         }
     });
 

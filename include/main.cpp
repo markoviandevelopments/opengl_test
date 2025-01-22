@@ -53,6 +53,8 @@ void framebuffer_size_callback(GLFWwindow *window, int width, int height);
 
 int main()
 {
+    int itC = 0;
+    int fullSends = 0;
 
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -265,6 +267,7 @@ int main()
         player.draw(shaderProgram, view, projection, server_time, camera);
 
         if (gameStateTemp.size() == 1078) {
+            fullSends++;
             for (int i=0; i < 1078; i++) {
                 if (gameState.size() < i + 1) {
                     gameState.push_back(gameStateTemp[i]);
@@ -327,12 +330,15 @@ int main()
 
         renderText(textShader, full_str, 25.0f, 550.0f, 0.5f, glm::vec3(0.8f, 0.8f, 0.0f));
         std::string full_str_2 = "B: " + formatFloat(server_time) +
-                                "    Random: " + formatFloat(gameState[23]);
+                                "    Random: " + formatFloat(gameState[23]) +
+                                "    Full Send Frac: " + std::to_string(fullSends * 1.0f / (itC * 1.0f));
         renderText(textShader, full_str_2, 25.0f, 500.0f, 0.5f, glm::vec3(0.8f, 0.8f, 0.0f));
 
             glEnable(GL_DEPTH_TEST);
         glfwSwapBuffers(window);
         glfwPollEvents();
+
+        itC++;
     }
 
     glDeleteVertexArrays(1, &VAO);
