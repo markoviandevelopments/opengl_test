@@ -31,6 +31,7 @@
 #include "player2.h"
 #include "chessboard.h"
 #include "draw_food_grid.h"
+#include "agents.h"
 
 #include <map>
 
@@ -102,7 +103,7 @@ int main()
         return -1;
     }
 
-    char buffer[1024] = {0};
+    char buffer[16384] = {0};
 
     Chessboard chessboard;
     chessboard.initialize();
@@ -157,6 +158,7 @@ int main()
     Cube cube;
     Player player;
     Player2 player2;
+    Agents agents;
     
 
     float deltaTime = 0.0f;
@@ -277,8 +279,23 @@ int main()
         if (!gameState.empty()) {
             foodgrid.drawFoodGrid(shaderProgram, view, projection, gameState);
             std::cout << "Player 1 x pos: " << gameState[1] << std::endl;
-            player2.draw(shaderProgram, view, projection, server_time, gameState[1], gameState[2], gameState[3]);
-            player2.draw(shaderProgram, view, projection, server_time, gameState[4], gameState[5], gameState[6]);
+            player2.draw(shaderProgram, view, projection, server_time, gameState[1], 0.5f, gameState[3]);
+            player2.draw(shaderProgram, view, projection, server_time, gameState[4], 0.5f, gameState[6]);
+            for (int i=0; i<2; i++) {
+                agents.draw(shaderProgram, view, projection, server_time, gameState[i*2 + 74], 0.25f, gameState[i*2 + 75]);
+            }
+            for (int x=0; x<10; x++) {
+                for (int y=0; y < 10; y++) {
+                    for (int z=0; z < 10; z++) {
+                        int i = x * 10 * 10 + y * 10 + z;
+                        if (gameState[i + 78] > 0.5f) {
+                            player2.draw(shaderProgram, view, projection, server_time, x, y, z - 40);
+                        }
+                        ;
+                    }
+                }
+            }
+            
         } else {
             std::cout << "EMPTY..." << std::endl;
         }

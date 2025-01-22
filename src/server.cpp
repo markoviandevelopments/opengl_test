@@ -15,7 +15,7 @@
 #define PORT 12346
 
 std::array<std::optional<int>, 2> clients; // Fixed size for 2 players, using optional for empty slots
-std::array<float, 74> game_state;          // Server time + Player 1 coords + Player 2 coords
+std::array<float, 1078> game_state;          // Server time + Player 1 coords + Player 2 coords
 std::mutex state_mutex;                   // Mutex to protect `game_state`
 std::mutex client_mutex;                  // Mutex to protect `clients`
 bool server_running = true;
@@ -54,7 +54,7 @@ void handle_client(int client_socket, int player_index) {
     std::cout << "Player " << player_index + 1 << " connected: " << client_socket << std::endl;
 
     while (server_running) {
-        char buffer[1024] = {0};
+        char buffer[16384] = {0};
         int bytes_read = recv(client_socket, buffer, sizeof(buffer), 0);
 
         if (bytes_read <= 0) {
@@ -113,12 +113,25 @@ int main() {
     7     | Increments
     8     | Random number up to 10
     10-73 | Tile food amounts
+    74-77 | Agent coordinates
+    78-1077 | 3D grid
 
 
     */
     {
         std::lock_guard<std::mutex> lock(state_mutex);
         game_state.fill(0.0f);
+        for (int i=0; i<2; i++){
+            game_state[i * 2 + 74] = 42.0f;
+            game_state[i * 2 + 75] = 2.0f;
+        }
+
+        for (int i=78; i<1078; i++) {
+            float randFloat = static_cast<float>(std::rand() % 100) / 100.0f; // Random value
+            if (randFloat < 5.0f || 1 == 1) {
+                game_state[i] = 1.0f;
+            }
+        }
     }
 
     // Initialize the client slots
@@ -178,11 +191,25 @@ int main() {
                 // Example: Update game_state values (indexes 5 and 6) with dummy logic
                 game_state[7] += 1.0f; // Increment a value
                 game_state[8] = static_cast<float>(std::rand() % 100) / 10.0f; // Random value
-                int randomNumber = 10 + std::rand() % (73 - 10 + 1);
+                int randomNumber = 10 + std::rand() % (73 - 10);
                 game_state[randomNumber] = static_cast<float>(std::rand() % 10000) / 1000.0f;
+                for (int i=0; i<2; i++){
+                    game_state[i * 2 + 74] += static_cast<float>(std::rand() % 1000) / 1000.0f - 0.5f;
+                    if (game_state[i * 2 + 74] > 48.0f) {
+                        game_state[i * 2 + 74] = 48.0f;
+                    } else if (game_state[i * 2 + 74] < 40.0f) {
+                        game_state[i * 2 + 74] = 40.0f;
+                    }
+                    game_state[i * 2 + 75] += (static_cast<float>(std::rand() % 2000) / 1000.0f - 1.0f) * 0.1f;
+                    if (game_state[i * 2 + 75] > 8.0f) {
+                        game_state[i * 2 + 75] = 8.0f;
+                    } else if (game_state[i * 2 + 75] < 0.0f) {
+                        game_state[i * 2 + 75] = 0.0f;
+                    }
+                }
             }
 
-            std::this_thread::sleep_for(std::chrono::milliseconds(20)); // Wait for 100 ms
+            std::this_thread::sleep_for(std::chrono::milliseconds(20)); // Wait
         }
     });
 

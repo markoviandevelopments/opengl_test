@@ -1,17 +1,17 @@
-#include "player2.h"
+#include "agents.h"
 #include <iostream>
 
-Player2::Player2() {
+Agents::Agents() {
     initialize();
 }
 
-Player2::~Player2() {
+Agents::~Agents() {
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
     glDeleteBuffers(1, &EBO);
 }
 
-void Player2::initialize() {
+void Agents::initialize() {
     float cubeVertices[] = {
         -0.2f, -0.2f, -0.2f,
          0.2f, -0.2f, -0.2f,
@@ -50,15 +50,20 @@ void Player2::initialize() {
     glBindVertexArray(0); // Unbind VAO
 }
 
-void Player2::draw(unsigned int shaderProgram, const glm::mat4& view, const glm::mat4& projection, float serverTime, float x, float y, float z) {
+void Agents::draw(unsigned int shaderProgram, const glm::mat4& view, const glm::mat4& projection, float serverTime, float x, float y, float z) {
+
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     glUseProgram(shaderProgram);
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(x, y, z));
 
     glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "view"), 1, GL_FALSE, glm::value_ptr(view));
     glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
     glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, glm::value_ptr(model));
-    glUniform3fv(glGetUniformLocation(shaderProgram, "color"), 1, glm::value_ptr(glm::vec3(0.0f, 1.0f, 1.0f)));
+    glUniform3fv(glGetUniformLocation(shaderProgram, "color"), 1, glm::value_ptr(glm::vec3(1.0f, 0.0f, 0.0f)));
 
     glBindVertexArray(VAO);
     glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
